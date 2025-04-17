@@ -44,13 +44,38 @@ const getNowPlaying = async () => {
 export default async function (req: VercelRequest, res: VercelResponse) {
   const response = await getNowPlaying();
 
+  let svgContent = "";
+  if (response.status === 204) {
+    console.log("Nothing is currently playing (204)");
+    // handle like paused or no content
+    svgContent = `
+  <svg width="400" height="100" viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="400" height="100" rx="10" fill="#181818"/>
+    <text x="50%" y="50%" fill="#B3B3B3" font-size="18" font-family="Arial" text-anchor="middle" alignment-baseline="middle">
+      Nothing is currently playing 
+    </text>
+  </svg>`;
+    return svgContent;
+  }
+
+  if (!response.ok) {
+    console.error("Spotify error:", response.status, await response.text());
+    // handle error (maybe expired token or no active device)
+    svgContent = `
+  <svg width="400" height="100" viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="400" height="100" rx="10" fill="#181818"/>
+    <text x="50%" y="50%" fill="#B3B3B3" font-size="18" font-family="Arial" text-anchor="middle" alignment-baseline="middle">
+       Spotify Error
+    </text>
+  </svg>`;
+    return svgContent;
+  }
+
   const song = await response.json();
   console.log(song);
   const isPlaying = song.is_playing;
   // check if it's an ad, cause ad breaks image generation
   const isAd = song.currently_playing_type === "ad" || !song.item;
-
-  let svgContent = "";
 
   if (!isPlaying || isAd) {
     svgContent = `
