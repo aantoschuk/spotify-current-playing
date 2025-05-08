@@ -55,7 +55,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
       Nothing is currently playing 
     </text>
   </svg>`;
-    return svgContent;
+  return res.status(200).send(svgContent);
   }
 
   if (!response.ok) {
@@ -68,7 +68,7 @@ export default async function (req: VercelRequest, res: VercelResponse) {
        Spotify Error
     </text>
   </svg>`;
-    return svgContent;
+  return res.status(200).send(svgContent);
   }
 
   const song = await response.json();
